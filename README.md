@@ -93,125 +93,158 @@ This approach provides a clean, maintainable way to create and manage complex pi
 
 ## Example Usage
 
+Let's consider a real-world example where we want to implement an order processing pipeline. In this scenario, we'll have three middlewares: `ValidateOrderMiddleware`, `ApplyDiscountMiddleware`, and `CreateInvoiceMiddleware`. Additionally, we'll use a `LoggingFilter` to log the execution of each middleware.
+
+Here's a sample implementation:
+
+1. First, create the specific middlewares and filter:
+
 ```csharp
-public class CustomPipelineBuilder : PipelineBuilder<CustomContext, CustomResult>
+public class ValidateOrderMiddleware : IPipelineMiddleware<OrderProcessingContext>
 {
-    public CustomPipelineBuilder(IServiceProvider serviceProvider) : base(serviceProvider)
+    public async Task Execute(OrderProcessingContext context, Func<OrderProcessingContext, Task> next, CancellationToken cancellationToken)
     {
-    }
+        // Validate the order (e.g., check stock availability, customer data, etc.)
+        // ...
 
-    protected override IPipelineBuilder<CustomContext, CustomResult> PreparePipeline()
-    {
-        return this
-            .Use<CustomMiddleware1>()
-            .Use<CustomMiddleware2>()
-            .UseFilter<CustomFilter>();
-    }
-}
-
-public class CustomContext : IPipelineContext<CustomResult>
-{
-    // Implementation
-}
-
-public class CustomResult
-{
-    // Custom result properties and methods
-}
-
-public class CustomMiddleware1 : IPipelineMiddleware<CustomContext>
-{
-    public async Task Execute(CustomContext context, Func<CustomContext, Task> next, CancellationToken cancellationToken)
-    {
-        // Middleware logic before next middleware
+        // Proceed to the next middleware in the pipeline
         await next(context);
-        // Middleware logic after next middleware
     }
 }
 
-public class CustomMiddleware2 : IPipelineMiddleware<CustomContext>
+public class ApplyDiscountMiddleware : IPipelineMiddleware<OrderProcessingContext>
 {
-    public async Task Execute(CustomContext context, Func<CustomContext, Task> next, CancellationToken cancellationToken)
+    public async Task Execute(OrderProcessingContext context, Func<OrderProcessingContext, Task> next, CancellationToken cancellationToken)
     {
-        // Middleware logic before next middleware
+        // Apply any applicable discounts to the order
+        // ...
+
+        // Proceed to the next middleware in the pipeline
         await next(context);
-        // Middleware logic after next middleware
     }
 }
 
-public class CustomFilter : IPipelineFilter
+public class CreateInvoiceMiddleware : IPipelineMiddleware<OrderProcessingContext>
+{
+    public async Task Execute(OrderProcessingContext context, Func<OrderProcessingContext, Task> next, CancellationToken cancellationToken)
+    {
+        // Create an invoice for the order
+        // ...
+
+        // Proceed to the next middleware in the pipeline
+        await next(context);
+    }
+}
+
+public class LoggingFilter : IPipelineFilter
 {
     public async Task OnMiddlewareExecuting<TContext>(IPipelineMiddleware<TContext> middleware, TContext context)
     {
-    // Logic to run before a middleware is executed
+        // Log middleware start
+        Console.WriteLine($"Starting {middleware.GetType().Name}");
     }
 
     public async Task OnMiddlewareExecuted<TContext>(IPipelineMiddleware<TContext> middleware, TContext context)
     {
-        // Logic to run after a middleware has executed
+        // Log middleware completion
+        Console.WriteLine($"Completed {middleware.GetType().Name}");
     }
 
     public async Task OnMiddlewareError<TContext>(IPipelineMiddleware<TContext> middleware, TContext context, Exception ex)
     {
-        // Logic to run if an exception occurs during the execution of a middleware
+        // Log middleware error
+        Console.WriteLine($"Error in {middleware.GetType().Name}: {ex.Message}");
     }
 }
 ```
 
+2. Create the context class:
+
 ```csharp
-// Usage in the application
-var serviceProvider = new ServiceCollection().BuildServiceProvider();
-var pipelineBuilder = new CustomPipelineBuilder(serviceProvider);
+public class OrderProcessingContext : IPipelineContext<bool>
+{
+    // Add properties related to the order processing, e.g., the order, customer, etc.
+    // ...
+
+    public async Task<bool> IsValid()
+    {
+        // Implement validation logic
+        // ...
+
+        return true;
+    }
+
+    public async Task<bool> GetResult()
+    {
+        // Return the result of the order processing (e.g., success or failure)
+        return true;
+    }
+}
+```
+
+3. Create a custom pipeline builder:
+
+```csharp
+public class OrderProcessingPipelineBuilder : PipelineBuilder<OrderProcessingContext, bool>
+{
+    public OrderProcessingPipelineBuilder(IServiceProvider serviceProvider)
+        : base(serviceProvider)
+    {
+    }
+
+    protected override IPipelineBuilder<OrderProcessingContext, bool> PreparePipeline()
+    {
+        return this
+            .Use<ValidateOrderMiddleware>()
+            .Use<ApplyDiscountMiddleware>()
+            .Use<CreateInvoiceMiddleware>()
+            .UseFilter<LoggingFilter>();
+    }
+}
+```
+
+4. Instantiate the custom pipeline builder, build the pipeline, and execute it:
+
+```csharp
+// Setup dependency injection
+var services = new ServiceCollection();
+services.AddPipelineMiddlewares(typeof(ValidateOrderMiddleware).Assembly);
+services.AddPipelineMiddlewareFilters(typeof(LoggingFilter).Assembly);
+services.AddSingleton<OrderProcessingPipelineBuilder>();
+var serviceProvider = services.BuildServiceProvider();
+
+// Instantiate the custom pipeline builder
+var pipelineBuilder = serviceProvider.GetRequiredService<OrderProcessingPipelineBuilder>();
+
+// Build the pipeline
 var pipeline = pipelineBuilder.Build();
 
-var context = new CustomContext();
-var result = await pipeline.Execute(context);
-
-// Process the result
-```
-
-In this example, we define a custom pipeline builder, context, result, middlewares, and a filter. The custom pipeline builder is responsible for constructing the pipeline with the specified middlewares and filter. The custom context and result are specific to your application and should implement the `IPipelineContext<TResult>` interface.
-
-The custom middlewares define the logic for processing the context, and the custom filter defines the logic for handling events during middleware execution. Finally, the pipeline is built and executed with the custom context, and the result is processed.
-
-## Dependency Injection
-
-In this example, we will demonstrate how to integrate the pipeline library with dependency injection using the Microsoft.Extensions.DependencyInjection package.
-
-First, update your `Startup` class or any other place where you configure your services to use the provided extension methods:
-
-```csharp
-public void ConfigureServices(IServiceCollection services)
+// Create a context for the order processing
+var orderProcessingContext = new OrderProcessingContext
 {
-    services.AddPipelineMiddlewares(typeof(CustomMiddleware1).Assembly);
-    services.AddPipelineMiddlewareFilters(typeof(CustomFilter).Assembly);
-    services.AddSingleton<CustomPipelineBuilder>();
+    // Initialize the context with order, customer data, etc.
+    // ...
+};
+
+// Execute the pipeline
+try
+{
+    CancellationToken cancellationToken = CancellationToken.None;
+    var result = await pipeline.Execute(orderProcessingContext, cancellationToken);
+
+    if (result)
+    {
+        Console.WriteLine("Order processing completed successfully.");
+    }
+    else
+    {
+        Console.WriteLine("Order processing failed.");
+    }
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Order processing encountered an error: {ex.Message}");
 }
 ```
 
-Now you can inject the custom pipeline builder and use it in your application as shown in the previous example. For example, in an ASP.NET Core controller:
-
-```csharp
-public class HomeController : Controller
-{
-    private readonly CustomPipelineBuilder _pipelineBuilder;
-
-    public HomeController(CustomPipelineBuilder pipelineBuilder)
-    {
-        _pipelineBuilder = pipelineBuilder;
-    }
-
-    public async Task<IActionResult> Index()
-    {
-        var context = new CustomContext();
-        var pipeline = _pipelineBuilder.Build();
-        var result = await pipeline.Execute(context);
-
-        // Process the result and return the appropriate view or response
-
-        return View(result);
-    }
-}
-```
-
-In this example, we use the `AddPipelineMiddlewares` and `AddPipelineMiddlewareFilters` extension methods to register all middlewares and filters within the specified assemblies. This simplifies the registration process and avoids the need to register each middleware and filter individually.
+In this example, we've created an order processing pipeline with three middlewares for validating orders, applying discounts, and creating invoices. We've also added a logging filter to log the execution of each middleware. The pipeline is built and executed using the custom `OrderProcessingPipelineBuilder` class. The pipeline processes the order encapsulated in the `OrderProcessingContext` and returns a success or failure result.
