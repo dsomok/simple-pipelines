@@ -1,6 +1,4 @@
-﻿using Ostrean.Infrastructure.Pipeline;
-
-namespace SimplePipeline.Tests.Pipeline;
+﻿namespace Simply.Pipelines.Tests.Pipeline;
 
 internal class PipelineContext : IPipelineContext<string>
 {

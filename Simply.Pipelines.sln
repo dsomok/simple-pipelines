@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32328.378
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimplePipeline", "src\SimplePipeline\SimplePipeline.csproj", "{03058CE2-0500-4CA4-8190-7A5A0787264C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Simply.Pipelines", "src\Simply.Pipelines\Simply.Pipelines.csproj", "{03058CE2-0500-4CA4-8190-7A5A0787264C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimplePipeline.Tests", "tests\SimplePipeline.Tests\SimplePipeline.Tests.csproj", "{CE6651F6-A83E-4B79-9DA2-E896B82CAD2E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Simply.Pipelines.Tests", "tests\Simply.Pipelines.Tests\Simply.Pipelines.Tests.csproj", "{CE6651F6-A83E-4B79-9DA2-E896B82CAD2E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

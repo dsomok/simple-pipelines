@@ -1,26 +1,20 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿namespace Simply.Pipelines;
 
-namespace Ostrean.Infrastructure.Pipeline;
-
-public class Pipeline<TContext, TResult>
-    where TContext : IPipelineContext<TResult>
+public class Pipeline<TContext, TResult> where TContext : IPipelineContext<TResult>
 {
-    private readonly IServiceProvider _serviceProvider;
     private readonly LinkedList<IPipelineMiddleware<TContext>> _middlewares;
     private readonly LinkedList<IPipelineFilter> _filters;
 
     internal Pipeline(
-        IServiceProvider serviceProvider, 
         LinkedList<IPipelineMiddleware<TContext>> middlewares, 
         LinkedList<IPipelineFilter> filters
     )
     {
-        if (middlewares == null || !middlewares.Any())
+        if (middlewares == null || middlewares.Count == 0)
         {
             throw new ArgumentException("Pipeline should contain steps", nameof(middlewares));
         }
 
-        _serviceProvider = serviceProvider;
         _middlewares = middlewares;
         _filters = filters;
     }
@@ -33,7 +27,7 @@ public class Pipeline<TContext, TResult>
         
         do
         {
-            var middleware = currentStep.Value;
+            var middleware = currentStep!.Value;
             var executeAction = new Func<TContext, Func<TContext, Task>, Task>(
                 (ctx, next) => ExecuteMiddleware(middleware, ctx, next, cancellationToken)
             );

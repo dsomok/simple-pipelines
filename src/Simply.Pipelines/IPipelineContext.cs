@@ -1,4 +1,4 @@
-﻿namespace Ostrean.Infrastructure.Pipeline;
+﻿namespace Simply.Pipelines;
 
 public interface IPipelineContext<TResult>
 {

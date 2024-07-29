@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Ostrean.Infrastructure.Pipeline.Configuration;
-using SimplePipeline.Tests.Pipeline;
+using Simply.Pipelines.Configuration;
+using Simply.Pipelines.Tests.Pipeline;
 
-namespace SimplePipeline.Tests;
+namespace Simply.Pipelines.Tests;
 
 public class PipelineTestFixture : IDisposable
 {

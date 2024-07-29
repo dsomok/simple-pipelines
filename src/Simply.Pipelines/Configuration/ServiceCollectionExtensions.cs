@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Ostrean.Infrastructure.Pipeline.Configuration;
+namespace Simply.Pipelines.Configuration;
 
 public static class ServiceCollectionExtensions
 {

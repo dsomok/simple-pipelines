@@ -1,6 +1,4 @@
-﻿using Ostrean.Infrastructure.Pipeline;
-
-namespace SimplePipeline.Tests.Pipeline.Middlewares;
+﻿namespace Simply.Pipelines.Tests.Pipeline.Middlewares;
 
 internal class Middleware2 : IPipelineMiddleware<PipelineContext>
 {

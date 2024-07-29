@@ -1,6 +1,4 @@
-﻿using Ostrean.Infrastructure.Pipeline;
-
-namespace SimplePipeline.Tests.Pipeline.Filters;
+﻿namespace Simply.Pipelines.Tests.Pipeline.Filters;
 
 internal class Filter1 : IPipelineFilter
 {

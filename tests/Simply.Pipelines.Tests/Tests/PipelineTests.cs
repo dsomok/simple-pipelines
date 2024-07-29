@@ -1,24 +1,20 @@
 using System.Diagnostics;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
-using SimplePipeline.Tests.Pipeline;
-using SimplePipeline.Tests.Pipeline.Filters;
+using Simply.Pipelines.Tests.Pipeline;
+using Simply.Pipelines.Tests.Pipeline.Filters;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SimplePipeline.Tests.Tests;
+namespace Simply.Pipelines.Tests.Tests;
 
 [Collection(PipelineTestCollection.NAME)]
-public class PipelineTests : IClassFixture<PipelineTestFixture>
+public class PipelineTests(
+    PipelineTestFixture testFixture,
+    ITestOutputHelper outputHelper
+) : IClassFixture<PipelineTestFixture>
 {
-    private readonly IServiceProvider _serviceProvider;
-    private readonly ITestOutputHelper _outputHelper;
-
-    public PipelineTests(PipelineTestFixture testFixture, ITestOutputHelper outputHelper)
-    {
-        _serviceProvider = testFixture.Build();
-        _outputHelper = outputHelper;
-    }
+    private readonly IServiceProvider _serviceProvider = testFixture.Build();
 
     [Fact]
     public async Task SimplePipeline_ExecutedSuccessfully()
@@ -31,11 +27,11 @@ public class PipelineTests : IClassFixture<PipelineTestFixture>
         // Act
         var timer = Stopwatch.StartNew();
         var result = await pipeline.Execute(context);
-        _outputHelper.WriteLine($"Executed {nameof(SimplePipelineBuilder)} in {timer.ElapsedTicks} ticks");
+        outputHelper.WriteLine($"Executed {nameof(SimplePipelineBuilder)} in {timer.ElapsedTicks} ticks");
 
         // Assert
         result.Should().NotBeNullOrEmpty();
-        result.Should().Be(SimplePipelineBuilder.ExpectedResult);
+        result.Should().Be(SimplePipelineBuilder.EXPECTED_RESULT);
     }
 
     [Fact]
@@ -49,11 +45,11 @@ public class PipelineTests : IClassFixture<PipelineTestFixture>
         // Act
         var timer = Stopwatch.StartNew();
         var result = await pipeline.Execute(context);
-        _outputHelper.WriteLine($"Executed {nameof(WithFiltersPipelineBuilder)} in {timer.ElapsedTicks} ticks");
+        outputHelper.WriteLine($"Executed {nameof(WithFiltersPipelineBuilder)} in {timer.ElapsedTicks} ticks");
 
         // Assert
         result.Should().NotBeNullOrEmpty();
-        result.Should().Be(WithFiltersPipelineBuilder.ExpectedResult);
+        result.Should().Be(WithFiltersPipelineBuilder.EXPECTED_RESULT);
     }
 
     [Fact]
@@ -69,11 +65,11 @@ public class PipelineTests : IClassFixture<PipelineTestFixture>
         // Act
         var timer = Stopwatch.StartNew();
         var result = await pipeline.Execute(context);
-        _outputHelper.WriteLine($"Executed {nameof(WithFiltersPipelineBuilder)} in {timer.ElapsedTicks} ticks");
+        outputHelper.WriteLine($"Executed {nameof(WithFiltersPipelineBuilder)} in {timer.ElapsedTicks} ticks");
 
         // Assert
         result.Should().NotBeNullOrEmpty();
-        result.Should().Be(WithFiltersPipelineBuilder.ExpectedResult);
+        result.Should().Be(WithFiltersPipelineBuilder.EXPECTED_RESULT);
     }
 
     [Fact]
